@@ -100,7 +100,9 @@ public class Workspace {
 	/**
 	 * Create an  workspace
 	 * 
-	 * @param name logic name of the environment
+	 * @param id logic name of the environment
+	 * @param desc
+	 * @param logger
 	 */
 	public Workspace(WorkspaceId id, WorkspaceDescriptor desc, ICartagoLogger logger){
 		
@@ -197,7 +199,8 @@ public class Workspace {
 	 * Create a child workspace on a remote node
 	 * 
 	 * @param name
-	 * @param log
+	 * @param address
+	 * @param protocol
 	 * @return
 	 * @throws CartagoException
 	 */
@@ -462,7 +465,7 @@ public class Workspace {
 	 * Join this workspace
 	 * 
 	 * @param cred
-	 * @param artBodyClassName
+	 * @param cred
 	 * @param eventListener
 	 * @return
 	 * @throws CartagoException

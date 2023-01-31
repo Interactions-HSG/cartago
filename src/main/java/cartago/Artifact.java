@@ -20,8 +20,6 @@ package cartago;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.locks.*;
-import java.util.logging.LogManager;
-import java.io.*;
 
 /**
  * Base class for defining artifacts.
@@ -242,7 +240,6 @@ public abstract class Artifact {
 	 * 
 	 * version 3.0
 	 * @param opName
-	 * @param op
 	 * @throws Exception
 	 */
 	protected void removeOp(String opName) throws Exception {
@@ -734,6 +731,7 @@ public abstract class Artifact {
 				ObsProperty prop = new ObsProperty(obsPropertyMap,obsPropId, fullId, name, values); 
 				obsPropertyMap.add(prop);
 				obsPropId++;
+				commitObsStateChanges(); //TODO: check
 				return prop;
 				//env.notifyObsPropAddedEvent(id, prop.getUserCopy());
 			} catch (Exception ex) {
@@ -753,6 +751,8 @@ public abstract class Artifact {
 			if (prop == null){
 				throw new IllegalArgumentException(
 						"invalid observable property: " + name);
+			} else {
+				commitObsStateChanges(); //TODO: check
 			}
 	}
 
@@ -773,6 +773,30 @@ public abstract class Artifact {
 
 	protected ObsProperty getObsProperty(String name){
 		return obsPropertyMap.getByName(name);
+	}
+
+	protected ObsPropMap getObsPropertyMap(){
+		return obsPropertyMap;
+	}
+
+	public ArrayList<ArtifactObsProperty> readAllProperties(){
+		return obsPropertyMap.readAll();
+	}
+
+	public ArtifactObsProperty[] getPropsChanged(){
+		return obsPropertyMap.getPropsChanged();
+	}
+
+	public ArtifactObsProperty[] getPropsAdded(){
+		return obsPropertyMap.getPropsAdded();
+	}
+
+	public ArtifactObsProperty[] getPropsRemoved(){
+		return obsPropertyMap.getPropsRemoved();
+	}
+
+	public void commitChanges(){
+		this.obsPropertyMap.commitChanges();
 	}
 
 	protected boolean hasObsProperty(String name){
@@ -885,7 +909,7 @@ public abstract class Artifact {
 	 * The execution/success semantics of the new operation is completely
 	 * independent from current operation.
 	 * 
-	 * @param op
+	 * @param opName
 	 *            - the operation to be executed
 	 */
 	protected void execInternalOp(String opName, Object... params) {
@@ -1181,8 +1205,7 @@ public abstract class Artifact {
 	 * Ends an external use session.
 	 * 
 	 * Internal use, for kernel.
-	 * 
-	 * @param success
+	 *
 	 */
 	public void endExtSession(){
 		try {
@@ -1199,8 +1222,7 @@ public abstract class Artifact {
 	 * Ends an external use session.
 	 * 
 	 * Internal use, for kernel.
-	 * 
-	 * @param success
+	 *
 	 */
 	public void endExtSessionWithFailure(){
 		try {

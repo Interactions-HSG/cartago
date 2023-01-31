@@ -147,7 +147,6 @@ public class WorkspaceArtifact extends Artifact {
 	 * 
 	 * @param remoteWspPath
 	 * @param wspName
-	 * @param protocol
 	 */
 	@OPERATION void linkRemoteWorkspace(String remoteWspPath, String wspName)  {
 		try {
@@ -162,10 +161,10 @@ public class WorkspaceArtifact extends Artifact {
 	
 	/**
 	 * Mounting is linking a remote wsp specifying the full local path 
-	 * 
+	 *
+	 * @param targetMASURL
 	 * @param remoteWspPath
-	 * @param localFullName
-	 * @param protocol
+	 * @param localWspPath
 	 */
 	@OPERATION void mountWorkspace(String targetMASURL, String remoteWspPath, String localWspPath)  {
 		try {

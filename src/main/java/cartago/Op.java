@@ -32,8 +32,7 @@ public class Op implements java.io.Serializable {
 	
 	/**
 	 * Specifies an operation with any number of arguments
-	 * 
-	 * @param targetId id of the artifact
+	 *
 	 * @param name operation name
 	 */
 	public Op(String name, Object... params){
