@@ -27,6 +27,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.ServerWebSocket;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -112,7 +113,7 @@ public class CartagoEnvironmentService extends AbstractVerticle  {
 		// router.post(API_BASE_PATH + "/exec-ia-op").handler(this::handleExecIAOP);
 		// router.post(API_BASE_PATH + "/do-action").handler(this::handleJoinWSP);
 
-		router.get(API_BASE_PATH + "/:masName").handler(this::handleResolveWSP);
+		router.get(API_BASE_PATH + "/:wsp").handler(this::handleResolveWSP);
 		 
 		server = vertx.createHttpServer()
 		.requestHandler(router)
@@ -222,14 +223,7 @@ public class CartagoEnvironmentService extends AbstractVerticle  {
 	/**
 	 * Exec an inter-artifact operation call.
 	 * 
-	 * @param callback
-	 * @param callbackId
-	 * @param userId
-	 * @param srcId
-	 * @param targetId
-	 * @param op
-	 * @param timeout
-	 * @param test
+	 *
 	 * @return
 	 * @throws RemoteException
 	 * @throws CartagoException
@@ -253,7 +247,7 @@ public class CartagoEnvironmentService extends AbstractVerticle  {
 
 	private void handleResolveWSP(RoutingContext routingContext) {
 		log("Handling ResolveWSP from "+routingContext.request().absoluteURI());
-		String envName = routingContext.request().getParam("masName");
+		//String envName = routingContext.request().getParam("masName");
 		String fullPath = routingContext.request().getParam("wsp");
 		JsonObject obj = new JsonObject();
 		try {
@@ -267,10 +261,20 @@ public class CartagoEnvironmentService extends AbstractVerticle  {
 				obj.put("address", des.getAddress());
 				obj.put("protocol", des.getProtocol());
 			}
+			JsonArray artifacts = new JsonArray();
+			String[] artifactList = des.getWorkspace().getArtifactList();
+			for (int i=0;i<artifactList.length;i++){
+				artifacts.add(artifactList[i]);
+			}
+			if (artifacts.size()>0) {
+				obj.put("artifacts", artifacts);
+			}
 			routingContext.response().putHeader("content-type", "application/text").end(obj.encode());
 		} catch (Exception ex) {
+			String reply = ex.getMessage();
+			System.out.println("error reply: "+ reply);
 			HttpServerResponse response = routingContext.response();
-			response.setStatusCode(404).end();
+			response.setStatusCode(404).end("An error was encountered: "+ reply);
 		}
 	}
 
