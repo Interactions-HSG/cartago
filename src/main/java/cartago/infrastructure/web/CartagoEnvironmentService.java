@@ -18,6 +18,7 @@
 package cartago.infrastructure.web;
 
 import java.rmi.*;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -113,7 +114,8 @@ public class CartagoEnvironmentService extends AbstractVerticle  {
 		// router.post(API_BASE_PATH + "/exec-ia-op").handler(this::handleExecIAOP);
 		// router.post(API_BASE_PATH + "/do-action").handler(this::handleJoinWSP);
 
-		router.get(API_BASE_PATH + "/:wsp").handler(this::handleResolveWSP);
+		router.get(API_BASE_PATH + "/workspaces/:wsp").handler(this::handleResolveWSP);
+		router.get(API_BASE_PATH + "/workspaces/:wsp/artifacts/:artifact").handler(this::handleResolveArtifact);
 		 
 		server = vertx.createHttpServer()
 		.requestHandler(router)
@@ -247,7 +249,6 @@ public class CartagoEnvironmentService extends AbstractVerticle  {
 
 	private void handleResolveWSP(RoutingContext routingContext) {
 		log("Handling ResolveWSP from "+routingContext.request().absoluteURI());
-		//String envName = routingContext.request().getParam("masName");
 		String fullPath = routingContext.request().getParam("wsp");
 		System.out.println("workspace: "+fullPath);
 		JsonObject obj = new JsonObject();
@@ -270,14 +271,42 @@ public class CartagoEnvironmentService extends AbstractVerticle  {
 			if (artifacts.size()>0) {
 				obj.put("artifacts", artifacts);
 			}
-			routingContext.response().putHeader("content-type", "application/text").end(obj.encode());
+			routingContext.response().putHeader("content-type", "application/json").end(obj.encode());
 		} catch (Exception ex) {
-			String reply = ex.getMessage();
 			ex.printStackTrace();
-			System.out.println("error reply: "+ reply);
 			HttpServerResponse response = routingContext.response();
-			response.setStatusCode(404).end("An error was encountered: "+ reply);
+			response.setStatusCode(404).end("An error was encountered");
 		}
+	}
+
+	public void handleResolveArtifact(RoutingContext routingContext){
+		String workspace= routingContext.request().getParam("wsp");
+		String artifact = routingContext.request().getParam("artifact");
+		JsonObject obj = new JsonObject();
+		try {
+			WorkspaceDescriptor des = CartagoEnvironment.getInstance().resolveWorkspace(workspace);
+			ArtifactDescriptor artifactDescriptor = des.getWorkspace().getArtifactDescriptor(artifact);
+			ArrayList<ArtifactObsProperty> properties = artifactDescriptor.getArtifact().readAllProperties();
+			JsonArray obsProperties = new JsonArray();
+			for (ArtifactObsProperty property: properties){
+				JsonObject propertyObject = new JsonObject();
+				propertyObject.put("name", property.getName());
+				Object[] values = property.getValues();
+				JsonArray valueArray = new JsonArray();
+				for (int i = 0; i<values.length;i++){
+					valueArray.add(values[i]);
+				}
+				propertyObject.put("values", valueArray);
+				obsProperties.add(propertyObject);
+			}
+			obj.put("properties", obsProperties);
+
+			routingContext.response().putHeader("content-type", "application/json").end(obj.encode());
+		} catch (Exception e){
+			e.printStackTrace();
+			routingContext.response().setStatusCode(404).end("An error was encountered");
+		}
+
 	}
 
 

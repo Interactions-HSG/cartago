@@ -269,8 +269,6 @@ public class CartagoEnvironment {
 		collection.add(rootWsp);
 		int newSize = collection.size();
 		while (size<newSize){
-			System.out.println("size: "+size);
-			System.out.println("new size: "+newSize);
 			size = newSize;
 			for (WorkspaceDescriptor wd: collection){
 				Collection<WorkspaceDescriptor> childWsps = wd.getWorkspace().getChildWSPs();
@@ -285,11 +283,9 @@ public class CartagoEnvironment {
 
 	public synchronized WorkspaceDescriptor resolveWorkspace(String workspaceName) throws WorkspaceNotFoundException {
 		Collection<WorkspaceDescriptor> workspaces = getAllWorkspaces();
-		System.out.println("all workspaces: "+workspaces);
 		WorkspaceDescriptor wd = null;
 		for (WorkspaceDescriptor cwd: workspaces){
 			String currentWorkspaceName = cwd.getWorkspace().getId().getName();
-			System.out.println("current workspace name: "+currentWorkspaceName);
 			if (currentWorkspaceName.equals(workspaceName)){
 				wd = cwd;
 			}
