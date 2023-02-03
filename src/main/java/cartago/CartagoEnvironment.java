@@ -17,13 +17,7 @@
  */
 package cartago;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import cartago.infrastructure.CartagoInfrastructureLayerException;
 import cartago.infrastructure.ICartagoInfrastructureLayer;
@@ -130,7 +124,8 @@ public class CartagoEnvironment {
 	/**
 	 * Init the environment.
 	 * 
-	 * @param logger
+	 * @param rootWspName
+	 * @param envName
 	 * @throws CartagoException
 	 */
 	public void init(String rootWspName, String envName) throws CartagoException {
@@ -156,7 +151,9 @@ public class CartagoEnvironment {
 	/**
 	 * Init the environment
 	 * 
-	 * @param logger
+	 * @param fullName
+	 * @param envName
+	 * @param parent
 	 * @throws CartagoException
 	 */
 	public void initFromRemote(String fullName, String envName, WorkspaceDescriptor parent) throws CartagoException {
@@ -265,6 +262,35 @@ public class CartagoEnvironment {
 		
 		return current;		
 	}
+
+	public synchronized WorkspaceDescriptor resolveWorkspace(String workspaceName) throws WorkspaceNotFoundException {
+		WorkspaceDescriptor wd = null;
+		Workspace currentWorkspace = this.rootWsp.getWorkspace();
+		WorkspaceDescriptor currentWorkspaceDescriptor = this.rootWsp;
+		boolean b = true;
+		while (wd == null && b){
+			String currentWorkspaceName = currentWorkspace.getId().getName();
+			System.out.println("workspace name: "+currentWorkspaceName);
+			if (Objects.equals(currentWorkspace.getId().getName(), workspaceName)){
+				wd = currentWorkspaceDescriptor;
+				b = false;
+			} else {
+				Collection<WorkspaceDescriptor> childWsps = currentWorkspace.getChildWSPs();
+				if (childWsps.size()>0){
+					for (WorkspaceDescriptor workspaceDescriptor: childWsps){
+						WorkspaceDescriptor candidate = resolveWorkspace(workspaceDescriptor.getWorkspace().getId().getName());
+						if (candidate != null){
+							wd = candidate;
+							b = false;
+						}
+					}
+				} else {
+					b = false;
+				}
+			}
+		}
+		return wd;
+	}
 	
 	
 	public WorkspaceDescriptor resolveRemoteWSP(String remoteWspPath, String address, String masName, String protocol) throws WorkspaceNotFoundException  {
@@ -304,8 +330,7 @@ public class CartagoEnvironment {
 
 	/**
 	 * Start a CArtAgO session in a local workspace.
-	 * 
-	 * @param wspName workspace to join
+	 *
 	 * @param cred agent credential
 	 * @param eventListener listener to perceive workspace events
 	 * @return
@@ -321,7 +346,6 @@ public class CartagoEnvironment {
 	 * 
 	 * @param wspName workspace to join
 	 * @param cred agent credential
-	 * @param eventListener listener to perceive workspace events
 	 * @return
 	 * @throws CartagoException
 	 */
@@ -331,10 +355,8 @@ public class CartagoEnvironment {
 
 	/**
 	 * Start a CArtAgO session in the main workspace, returning a context
-	 * 
-	 * @param wspName workspace to join
+	 *
 	 * @param cred agent credential
-	 * @param eventListener listener to perceive workspace events
 	 * @return
 	 * @throws CartagoException
 	 */
@@ -347,7 +369,6 @@ public class CartagoEnvironment {
 	 * Join a remote workspace - called by CArtAgO node.
 	 * 
 	 * @param address IP address of the node
-	 * @param wspName workspace name
 	 * @param address address of the workspace
 	 * @param protocol infrastructure protocol used to contact the node ("default" for default one)
 	 * @param cred agent credentials - (es: cartago.security.UserIdCredential(String agentName))
@@ -399,7 +420,6 @@ public class CartagoEnvironment {
 	 * @param timeout
 	 * @param test
 	 * @return
-	 * @throws RemoteException
 	 * @throws CartagoException
 	 */
 	OpId execRemoteInterArtifactOp(ICartagoCallback callback, long callbackId, AgentId userId, ArtifactId srcId, ArtifactId targetId, Op op, long timeout, IAlignmentTest test) throws CartagoInfrastructureLayerException, CartagoException {
@@ -648,7 +668,6 @@ public class CartagoEnvironment {
 	 * Before starting the service, the corresponding infrastructure layer should have been already installed.
 	 * 
 	 * @param type the type of service to start. Use "default" to specify default type.
-	 * @param address address of the service. 
 	 * @throws CartagoException if the start fails
 	 */
 	public synchronized void startInfrastructureService(String type) throws CartagoException {
