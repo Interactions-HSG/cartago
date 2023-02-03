@@ -269,10 +269,15 @@ public class CartagoEnvironment {
 		collection.add(rootWsp);
 		int newSize = collection.size();
 		while (size<newSize){
+			System.out.println("size: "+size);
+			System.out.println("new size: "+newSize);
+			size = newSize;
 			for (WorkspaceDescriptor wd: collection){
 				Collection<WorkspaceDescriptor> childWsps = wd.getWorkspace().getChildWSPs();
 				collection.addAll(childWsps);
 			}
+			newSize = collection.size();
+
 		}
 		return collection;
 
