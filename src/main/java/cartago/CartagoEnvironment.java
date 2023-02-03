@@ -263,31 +263,34 @@ public class CartagoEnvironment {
 		return current;		
 	}
 
-	public synchronized WorkspaceDescriptor resolveWorkspace(String workspaceName) throws WorkspaceNotFoundException {
-		WorkspaceDescriptor wd = null;
-		Workspace currentWorkspace = this.rootWsp.getWorkspace();
-		WorkspaceDescriptor currentWorkspaceDescriptor = this.rootWsp;
-		boolean b = true;
-		while (wd == null && b){
-			String currentWorkspaceName = currentWorkspace.getId().getName();
-			System.out.println("workspace name: "+currentWorkspaceName);
-			if (Objects.equals(currentWorkspace.getId().getName(), workspaceName)){
-				wd = currentWorkspaceDescriptor;
-				b = false;
-			} else {
-				Collection<WorkspaceDescriptor> childWsps = currentWorkspace.getChildWSPs();
-				if (childWsps.size()>0){
-					for (WorkspaceDescriptor workspaceDescriptor: childWsps){
-						WorkspaceDescriptor candidate = resolveWorkspace(workspaceDescriptor.getWorkspace().getId().getName());
-						if (candidate != null){
-							wd = candidate;
-							b = false;
-						}
-					}
-				} else {
-					b = false;
-				}
+	public synchronized Collection<WorkspaceDescriptor> getAllWorkspaces(){
+		Collection<WorkspaceDescriptor> collection = new HashSet<>();
+		int size = collection.size();
+		collection.add(rootWsp);
+		int newSize = collection.size();
+		while (size<newSize){
+			for (WorkspaceDescriptor wd: collection){
+				Collection<WorkspaceDescriptor> childWsps = wd.getWorkspace().getChildWSPs();
+				collection.addAll(childWsps);
 			}
+		}
+		return collection;
+
+	}
+
+	public synchronized WorkspaceDescriptor resolveWorkspace(String workspaceName) throws WorkspaceNotFoundException {
+		Collection<WorkspaceDescriptor> workspaces = getAllWorkspaces();
+		System.out.println("all workspaces: "+workspaces);
+		WorkspaceDescriptor wd = null;
+		for (WorkspaceDescriptor cwd: workspaces){
+			String currentWorkspaceName = cwd.getWorkspace().getId().getName();
+			System.out.println("current workspace name: "+currentWorkspaceName);
+			if (currentWorkspaceName.equals(workspaceName)){
+				wd = cwd;
+			}
+		}
+		if (wd == null){
+			throw new WorkspaceNotFoundException();
 		}
 		return wd;
 	}
