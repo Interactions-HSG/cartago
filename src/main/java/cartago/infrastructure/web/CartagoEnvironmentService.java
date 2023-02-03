@@ -252,7 +252,7 @@ public class CartagoEnvironmentService extends AbstractVerticle  {
 		System.out.println("workspace: "+fullPath);
 		JsonObject obj = new JsonObject();
 		try {
-			WorkspaceDescriptor des = CartagoEnvironment.getInstance().resolveWSP(fullPath);
+			WorkspaceDescriptor des = CartagoEnvironment.getInstance().resolveWorkspace(fullPath);
 			obj.put("envName", des.getEnvName());
 			obj.put("envId", des.getEnvId().toString());
 			if (des.isLocal()) {
