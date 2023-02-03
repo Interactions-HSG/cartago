@@ -249,6 +249,7 @@ public class CartagoEnvironmentService extends AbstractVerticle  {
 		log("Handling ResolveWSP from "+routingContext.request().absoluteURI());
 		//String envName = routingContext.request().getParam("masName");
 		String fullPath = routingContext.request().getParam("wsp");
+		System.out.println("workspace: "+fullPath);
 		JsonObject obj = new JsonObject();
 		try {
 			WorkspaceDescriptor des = CartagoEnvironment.getInstance().resolveWSP(fullPath);
@@ -272,6 +273,7 @@ public class CartagoEnvironmentService extends AbstractVerticle  {
 			routingContext.response().putHeader("content-type", "application/text").end(obj.encode());
 		} catch (Exception ex) {
 			String reply = ex.getMessage();
+			ex.printStackTrace();
 			System.out.println("error reply: "+ reply);
 			HttpServerResponse response = routingContext.response();
 			response.setStatusCode(404).end("An error was encountered: "+ reply);
