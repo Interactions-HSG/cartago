@@ -294,7 +294,7 @@ public class CartagoEnvironmentService extends AbstractVerticle  {
 				Object[] values = property.getValues();
 				JsonArray valueArray = new JsonArray();
 				for (int i = 0; i<values.length;i++){
-					valueArray.add(values[i]);
+					valueArray.add(values[i].toString());
 				}
 				propertyObject.put("values", valueArray);
 				obsProperties.add(propertyObject);
