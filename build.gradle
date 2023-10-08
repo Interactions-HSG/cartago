@@ -48,7 +48,7 @@ dependencies {
 repositories {
   mavenCentral()
 	maven {
- 	    url "http://jacamo.sourceforge.net/maven2"
+ 	    url "https://raw.github.com/jacamo-lang/mvn-repo/master"
   	}
 }
 
